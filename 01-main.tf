@@ -8,7 +8,7 @@ resource "hcloud_ssh_key" "k8s_admin" {
 }
 
 resource "hcloud_network" "kubenet" {
-  name     = "kubenet"
+  name     = var.name
   ip_range = var.network_cidr
 }
 
