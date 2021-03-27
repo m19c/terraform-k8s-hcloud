@@ -27,7 +27,7 @@ resource "null_resource" "init_main_master" {
   }
 
   provisioner "local-exec" {
-    command = "mkdir -p ${path.module}/secrets && touch ${path.module}/secrets/kubeadm_control_plane_join"
+    command = "mkdir -p secrets && touch secrets/kubeadm_control_plane_join"
   }
 
   provisioner "remote-exec" {
@@ -43,7 +43,7 @@ resource "null_resource" "init_main_master" {
       SSH_USERNAME    = "root"
       SSH_PORT        = var.ssh_port
       SSH_HOST        = hcloud_server.master[0].ipv4_address
-      TARGET          = "${path.module}/secrets/"
+      TARGET          = "secrets/"
     }
   }
 }
@@ -79,7 +79,7 @@ resource "null_resource" "init_masters" {
   }
 
   provisioner "file" {
-    source      = "${path.module}/secrets/kubeadm_control_plane_join"
+    source      = "secrets/kubeadm_control_plane_join"
     destination = "/tmp/kubeadm_control_plane_join"
   }
 
@@ -135,13 +135,13 @@ resource "null_resource" "init_workers" {
       SSH_USERNAME    = "root"
       SSH_PORT        = var.ssh_port
       SSH_HOST        = hcloud_server.master[0].ipv4_address
-      TARGET          = "${path.module}/secrets/"
+      TARGET          = "secrets/"
       ID              = count.index + 1
     }
   }
 
   provisioner "file" {
-    source      = "${path.module}/secrets/kubeadm_join_${count.index + 1}"
+    source      = "secrets/kubeadm_join_${count.index + 1}"
     destination = "/tmp/kubeadm_join"
   }
 
