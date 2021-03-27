@@ -7,7 +7,7 @@ resource "null_resource" "init_main_master" {
   }
 
   provisioner "file" {
-    source      = "files/10-kubeadm.conf"
+    source      = "${path.module}/files/10-kubeadm.conf"
     destination = "/root/10-kubeadm.conf"
   }
 
@@ -59,7 +59,7 @@ resource "null_resource" "init_masters" {
   }
 
   provisioner "file" {
-    source      = "files/10-kubeadm.conf"
+    source      = "${path.module}/files/10-kubeadm.conf"
     destination = "/root/10-kubeadm.conf"
   }
 
@@ -100,7 +100,7 @@ resource "null_resource" "init_workers" {
   }
 
   provisioner "file" {
-    source      = "files/10-kubeadm.conf"
+    source      = "${path.module}/files/10-kubeadm.conf"
     destination = "/root/10-kubeadm.conf"
   }
 
