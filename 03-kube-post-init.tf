@@ -24,11 +24,11 @@ resource "null_resource" "kube-cni" {
   }
 
   provisioner "local-exec" {
-    command = "KUBECONFIG=secrets/admin.conf kubectl apply -f ./cilium-firewall.yaml"
+    command = "KUBECONFIG=secrets/admin.conf kubectl apply -f ${path.module}/cilium-firewall.yaml"
   }
 
   provisioner "local-exec" {
-    command = "KUBECONFIG=secrets/admin.conf kubectl apply -f ./monitoring-ns.yaml"
+    command = "KUBECONFIG=secrets/admin.conf kubectl apply -f ${path.module}/monitoring-ns.yaml"
   }
 
   provisioner "local-exec" {
