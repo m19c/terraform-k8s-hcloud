@@ -16,7 +16,7 @@ resource "null_resource" "kube-cni" {
   }
 
   provisioner "local-exec" {
-    command = "KUBECONFIG=secrets/admin.conf helm install -n kube-system hcloud-cloud-controller-manager mlohr/hcloud-cloud-controller-manager --set manager.secret.create=true --set manager.secret.hcloudApiToken=${var.hcloud_token} --set manager.privateNetwork.enabled=true --set manager.loadBalancers.enabled=true --set manager.privateNetwork.id=${hcloud_network.kubenet.id} --set manager.privateNetwork.clusterSubnet=10.88.0.0/16"
+    command = "KUBECONFIG=secrets/admin.conf helm install -n kube-system hcloud-cloud-controller-manager mlohr/hcloud-cloud-controller-manager --set manager.secret.create=true --set manager.secret.hcloudApiToken=${var.hcloud_token} --set manager.privateNetwork.enabled=true --set manager.loadBalancers.enabled=true --set manager.privateNetwork.id=${hcloud_network.kubenet.id} --set manager.privateNetwork.clusterSubnet=${var.network_cidr}"
   }
 
   provisioner "local-exec" {
@@ -40,7 +40,7 @@ resource "null_resource" "kube-cni" {
 
 resource "null_resource" "post_restart_masters" {
   depends_on = [null_resource.kube-cni]
-  count       = var.master_count
+  count      = var.master_count
   connection {
     host        = hcloud_server.master[count.index].ipv4_address
     type        = "ssh"
@@ -55,7 +55,7 @@ resource "null_resource" "post_restart_masters" {
 
 resource "null_resource" "post_restart_nodes" {
   depends_on = [null_resource.kube-cni]
-  count       = var.node_count
+  count      = var.node_count
   connection {
     host        = hcloud_server.node[count.index].ipv4_address
     type        = "ssh"

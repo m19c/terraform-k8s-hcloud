@@ -5,7 +5,15 @@ variable "location" {
   default = "hel1"
 }
 
-variable "cluster_name" {
+variable "name" {
+  type        = string
+  description = "The name of the setup."
+  default     = "cluster"
+}
+
+variable "network_cidr" {
+  type    = string
+  default = "10.88.0.0/16"
 }
 
 variable "master_count" {
