@@ -8,35 +8,35 @@ resource "hcloud_ssh_key" "k8s_admin" {
 }
 
 resource "hcloud_network" "kubenet" {
-  name = "kubenet"
+  name     = "kubenet"
   ip_range = "10.88.0.0/16"
 }
 
 resource "hcloud_network_subnet" "kubenet" {
-  network_id = hcloud_network.kubenet.id
-  type = "server"
+  network_id   = hcloud_network.kubenet.id
+  type         = "server"
   network_zone = "eu-central"
-  ip_range   = "10.88.0.0/16"
+  ip_range     = "10.88.0.0/16"
 }
 
 resource "hcloud_load_balancer" "kube_load_balancer" {
-  name       = "kube-lb"
+  name               = "kube-lb"
   load_balancer_type = "lb11"
-  location   = var.location
+  location           = var.location
 }
 
 resource "hcloud_load_balancer_service" "kube_load_balancer_service" {
   load_balancer_id = hcloud_load_balancer.kube_load_balancer.id
-  protocol = "tcp"
-  listen_port = 6443
+  protocol         = "tcp"
+  listen_port      = 6443
   destination_port = 6443
 }
 
 resource "hcloud_server" "master" {
-  depends_on = [hcloud_load_balancer.kube_load_balancer]
+  depends_on  = [hcloud_load_balancer.kube_load_balancer]
   count       = var.master_count
   name        = "${var.cluster_name}-master-${count.index + 1}"
-  location   = var.location
+  location    = var.location
   server_type = var.master_type
   image       = var.master_image
   ssh_keys    = [hcloud_ssh_key.k8s_admin.id]
@@ -48,7 +48,7 @@ resource "hcloud_server" "master" {
   }
 
   provisioner "file" {
-    source      = "scripts/bootstrap.sh"
+    source      = "${path.module}/scripts/bootstrap.sh"
     destination = "/root/bootstrap.sh"
   }
 
@@ -73,7 +73,7 @@ resource "hcloud_server" "node" {
   }
 
   provisioner "file" {
-    source      = "scripts/bootstrap.sh"
+    source      = "${path.module}/scripts/bootstrap.sh"
     destination = "/root/bootstrap.sh"
   }
 
@@ -83,23 +83,23 @@ resource "hcloud_server" "node" {
 }
 
 resource "hcloud_server_network" "master_network" {
-  count       = var.master_count
-  depends_on  = [hcloud_server.master]
-  server_id = hcloud_server.master[count.index].id
+  count      = var.master_count
+  depends_on = [hcloud_server.master]
+  server_id  = hcloud_server.master[count.index].id
   network_id = hcloud_network.kubenet.id
 }
 
 resource "hcloud_load_balancer_target" "load_balancer_target" {
-  count       = var.master_count
-  depends_on  = [hcloud_server.master]
-  type = "server"
-  server_id = hcloud_server.master[count.index].id
+  count            = var.master_count
+  depends_on       = [hcloud_server.master]
+  type             = "server"
+  server_id        = hcloud_server.master[count.index].id
   load_balancer_id = hcloud_load_balancer.kube_load_balancer.id
 }
 
 resource "hcloud_server_network" "node_network" {
-  count       = var.node_count
-  depends_on  = [hcloud_server.node]
-  server_id = hcloud_server.node[count.index].id
+  count      = var.node_count
+  depends_on = [hcloud_server.node]
+  server_id  = hcloud_server.node[count.index].id
   network_id = hcloud_network.kubenet.id
 }
