@@ -2,6 +2,28 @@ provider "hcloud" {
   token = var.hcloud_token
 }
 
+resource "hcloud_firewall" "kubernetes" {
+  name = "${var.name}-fw"
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    source_ips = ["0.0.0.0/0", "::/0"]
+    port       = var.ssh_port
+  }
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    source_ips = ["0.0.0.0/0", "::/0"]
+    port       = "6443"
+  }
+  rule {
+    direction  = "in"
+    protocol   = "udp"
+    source_ips = ["0.0.0.0/0", "::/0"]
+    port       = "6443"
+  }
+}
+
 resource "hcloud_ssh_key" "k8s_admin" {
   name       = var.name
   public_key = file(var.ssh_public_key)
@@ -33,13 +55,14 @@ resource "hcloud_load_balancer_service" "kube_load_balancer_service" {
 }
 
 resource "hcloud_server" "master" {
-  depends_on  = [hcloud_load_balancer.kube_load_balancer]
-  count       = var.master_count
-  name        = "${var.name}-master-${count.index + 1}"
-  location    = var.location
-  server_type = var.master_type
-  image       = var.master_image
-  ssh_keys    = [hcloud_ssh_key.k8s_admin.id]
+  depends_on   = [hcloud_load_balancer.kube_load_balancer]
+  count        = var.master_count
+  name         = "${var.name}-master-${count.index + 1}"
+  location     = var.location
+  server_type  = var.master_type
+  image        = var.master_image
+  ssh_keys     = [hcloud_ssh_key.k8s_admin.id]
+  firewall_ids = [hcloud_firewall.kubernetes.id]
 
   connection {
     host        = self.ipv4_address
