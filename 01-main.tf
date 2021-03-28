@@ -14,6 +14,12 @@ resource "hcloud_firewall" "kubernetes" {
     direction  = "in"
     protocol   = "tcp"
     source_ips = ["0.0.0.0/0", "::/0"]
+    port       = "22"
+  }
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    source_ips = ["0.0.0.0/0", "::/0"]
     port       = "6443"
   }
   rule {
