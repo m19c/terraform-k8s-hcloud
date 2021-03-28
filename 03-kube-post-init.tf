@@ -1,9 +1,5 @@
 resource "null_resource" "kube-cni" {
   provisioner "local-exec" {
-    command = "KUBECONFIG=secrets/admin.conf helm repo add cilium https://helm.cilium.io/"
-  }
-
-  provisioner "local-exec" {
     command = "KUBECONFIG=secrets/admin.conf helm repo add mlohr https://helm-charts.mlohr.com/"
   }
 
@@ -17,14 +13,6 @@ resource "null_resource" "kube-cni" {
 
   provisioner "local-exec" {
     command = "KUBECONFIG=secrets/admin.conf helm install -n kube-system hcloud-cloud-controller-manager mlohr/hcloud-cloud-controller-manager --set manager.secret.create=true --set manager.secret.hcloudApiToken=${var.hcloud_token} --set manager.privateNetwork.enabled=true --set manager.loadBalancers.enabled=true --set manager.privateNetwork.id=${hcloud_network.kubenet.id} --set manager.privateNetwork.clusterSubnet=${var.network_cidr}"
-  }
-
-  provisioner "local-exec" {
-    command = "KUBECONFIG=secrets/admin.conf helm install cilium cilium/cilium --version 1.9.1 --namespace kube-system --set prometheus.enabled=true --set devices='{eth0}' --set hostFirewall=true"
-  }
-
-  provisioner "local-exec" {
-    command = "KUBECONFIG=secrets/admin.conf kubectl apply -f ${path.module}/cilium-firewall.yaml"
   }
 
   provisioner "local-exec" {
